@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Livro de Sessões</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root{
+    --paper:#FAF8F3;
+    --paper-line:#E4DECF;
+    --ink:#26332E;
+    --ink-soft:#5B6660;
+    --paid:#A6693A;
+    --paid-bg:#F3E7DC;
+    --unpaid:#5C6E82;
+    --unpaid-bg:#E7EBEF;
+    --panel:#FFFFFF;
+    --danger:#A5453B;
+    --ok:#5C7A5A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:48px 20px 90px;}
+  header.top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:18px;
+    margin-bottom:28px;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  h1{
+    font-family:'Source Serif 4', serif;
+    font-weight:700;
+    font-size:32px;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .subtitle{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+  .drive-status{text-align:right;font-size:13px;color:var(--ink-soft);}
+  .drive-status .row{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:#B7B0A0;}
+  .dot.on{background:var(--ok);}
+  .dot.warn{background:#C08A2E;}
+  button{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:13.5px;font-weight:500;
+    border:1.5px solid var(--ink);
+    background:var(--panel);color:var(--ink);
+    padding:9px 16px;border-radius:3px;cursor:pointer;
+    transition:background .15s ease, transform .05s ease;
+  }
+  button:hover{background:var(--ink);color:var(--paper);}
+  button:active{transform:scale(0.98);}
+  button.primary{background:var(--ink);color:var(--paper);}
+  button.primary:hover{background:#101815;}
+  button.ghost{border-color:var(--paper-line);color:var(--ink-soft);}
+  button.ghost:hover{background:var(--paper-line);color:var(--ink);}
+  button:disabled{opacity:.45;cursor:not-allowed;}
+  button:disabled:hover{background:var(--panel);color:var(--ink);}
+  button.small{padding:5px 10px;font-size:12px;}
+
+  section.card{background:var(--panel);border:1px solid var(--paper-line);border-radius:4px;padding:26px;margin-bottom:32px;}
+  .card h2{font-family:'Source Serif 4', serif;font-size:18px;font-weight:600;margin:0 0 18px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 18px;}
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .field.full{grid-column:1 / -1;}
+  label{font-size:12.5px;color:var(--ink-soft);font-weight:500;}
+  input[type=text], input[type=date], input[type=number], input[type=month], textarea, select{
+    font-family:'IBM Plex Sans', sans-serif;font-size:14.5px;padding:9px 10px;
+    border:1.5px solid var(--paper-line);border-radius:3px;background:var(--paper);color:var(--ink);
+  }
+  input:focus, textarea:focus, select:focus{outline:none;border-color:var(--ink);}
+  textarea{resize:vertical;min-height:56px;font-family:inherit;}
+
+  .type-toggle{display:flex;gap:8px;}
+  .type-toggle button{flex:1;border-radius:3px;}
+  .type-toggle button.active.paid{background:var(--paid);border-color:var(--paid);color:#fff;}
+  .type-toggle button.active.unpaid{background:var(--unpaid);border-color:var(--unpaid);color:#fff;}
+
+  .file-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--ink-soft);}
+  .file-chip{display:flex;align-items:center;gap:6px;background:var(--paper);border:1px solid var(--paper-line);padding:4px 9px;border-radius:20px;font-size:12.5px;}
+  .file-chip button{border:none;background:none;padding:0;font-size:13px;color:var(--danger);}
+  .file-chip button:hover{background:none;color:var(--danger);}
+
+  .form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+  .filters{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:18px;}
+  .filters .field{min-width:150px;}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  thead th{text-align:left;font-weight:500;font-size:12px;letter-spacing:.02em;color:var(--ink-soft);border-bottom:1.5px solid var(--ink);padding:0 8px 10px;}
+  tbody td{padding:13px 8px;border-bottom:1px solid var(--paper-line);vertical-align:top;}
+  tbody tr:hover{background:#FBFAF6;}
+  .tag{display:inline-block;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:20px;}
+  .tag.paid{background:var(--paid-bg);color:var(--paid);}
+  .tag.unpaid{background:var(--unpaid-bg);color:var(--unpaid);}
+  .value-cell{font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .row-actions{display:flex;gap:8px;}
+  .attach-list{font-size:12.5px;color:var(--ink-soft);}
+  .attach-list a{color:var(--ink);text-decoration:underline;cursor:pointer;}
+
+  .totals-bar{display:flex;gap:28px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--paper-line);border-radius:4px;padding:18px 24px;margin-top:22px;}
+  .totals-bar .t{display:flex;flex-direction:column;gap:2px;}
+  .totals-bar .t span.label{font-size:12px;color:var(--ink-soft);}
+  .totals-bar .t span.value{font-family:'Source Serif 4',serif;font-size:20px;font-weight:600;}
+
+  .empty{text-align:center;padding:50px 20px;color:var(--ink-soft);font-size:14px;}
+
+  .setup-note{font-size:13px;line-height:1.65;color:var(--ink-soft);background:#F3F1E8;border:1px solid var(--paper-line);padding:16px 18px;border-radius:4px;margin-bottom:28px;}
+  .setup-note b{color:var(--ink);}
+  .setup-note code{background:#EAE6D8;padding:1px 5px;border-radius:3px;}
+  .setup-note.hidden{display:none;}
+  .setup-note .actions{margin-top:10px;display:flex;gap:8px;}
+
+  .settings-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .settings-row input{flex:1;min-width:220px;}
+
+  @media(max-width:640px){
+    .grid{grid-template-columns:1fr;}
+    header.top{flex-direction:column;align-items:flex-start;}
+    .drive-status{text-align:left;}
+    .drive-status .row{justify-content:flex-start;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <h1>Livro de Sessões</h1>
+      <div class="subtitle">Registro financeiro de atendimentos</div>
+    </div>
+    <div class="drive-status">
+      <div class="row"><span class="dot" id="driveDot"></span><span id="driveText">Google Drive não conectado</span></div>
+      <div class="row" style="margin-top:6px;">
+        <button id="btnConnectDrive" class="ghost small">Conectar Google Drive</button>
+        <button id="btnSyncNow" class="ghost small" style="display:none;">Sincronizar agora</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="setup-note" id="setupNote">
+    Para acessar seus registros no celular, no computador e em qualquer lugar, este app salva tudo na sua conta do
+    <b>Google Drive</b>. Isso exige uma configuração única (leva uns 10 minutos): hospedar esta página com um endereço
+    próprio (ex.: GitHub Pages) e criar uma <b>chave de acesso (Client ID)</b> gratuita no Google Cloud. Peça ao Claude
+    o passo a passo — ele te guia. Depois de configurado, é só abrir o mesmo endereço em qualquer dispositivo e clicar
+    em "Conectar Google Drive".
+    <div class="actions"><button id="dismissNote" class="ghost small">Entendi</button></div>
+  </div>
+
+  <div class="setup-note hidden" id="settingsNote">
+    <div class="settings-row">
+      <label style="min-width:100%;">Cole aqui o Client ID do Google Cloud (uma vez por dispositivo/navegador):</label>
+      <input type="text" id="clientIdInput" placeholder="algo como 1234567890-abcxyz.apps.googleusercontent.com">
+      <button id="btnSaveClientId" class="primary small">Salvar</button>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2 id="formTitle">Nova sessão</h2>
+    <div class="grid">
+      <div class="field">
+        <label>Paciente</label>
+        <input type="text" id="fPaciente" placeholder="Nome do paciente">
+      </div>
+      <div class="field">
+        <label>Data da sessão</label>
+        <input type="date" id="fData">
+      </div>
+      <div class="field full">
+        <label>Tipo de sessão</label>
+        <div class="type-toggle">
+          <button type="button" id="btnPaid" class="paid">Remunerada</button>
+          <button type="button" id="btnUnpaid" class="unpaid">Não remunerada</button>
+        </div>
+      </div>
+      <div class="field" id="valorField">
+        <label>Valor (R$)</label>
+        <input type="number" id="fValor" placeholder="0,00" step="0.01" min="0">
+      </div>
+      <div class="field">
+        <label>Duração / modalidade (opcional)</label>
+        <input type="text" id="fModalidade" placeholder="Ex.: 50min, online">
+      </div>
+      <div class="field full">
+        <label>Observações</label>
+        <textarea id="fObs" placeholder="Notas sobre a sessão (opcional)"></textarea>
+      </div>
+      <div class="field full">
+        <label>Anexos</label>
+        <div class="file-row">
+          <button type="button" id="btnAddFile" class="ghost">+ Adicionar arquivo</button>
+          <input type="file" id="fileInput" multiple style="display:none">
+          <span id="fileChips" style="display:flex;gap:8px;flex-wrap:wrap;"></span>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="button" id="btnCancelEdit" class="ghost" style="display:none;">Cancelar</button>
+      <button type="button" id="btnSave" class="primary">Salvar sessão</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Sessões registradas</h2>
+    <div class="filters">
+      <div class="field">
+        <label>Paciente</label>
+        <select id="filterPaciente"><option value="">Todos</option></select>
+      </div>
+      <div class="field">
+        <label>Mês</label>
+        <input type="month" id="filterMes">
+      </div>
+      <div class="field">
+        <label>Tipo</label>
+        <select id="filterTipo">
+          <option value="">Todos</option>
+          <option value="paga">Remunerada</option>
+          <option value="nao_paga">Não remunerada</option>
+        </select>
+      </div>
+      <button id="btnClearFilters" class="ghost">Limpar filtros</button>
+    </div>
+
+    <div id="tableWrap">
+      <table>
+        <thead>
+          <tr><th>Data</th><th>Paciente</th><th>Tipo</th><th>Valor</th><th>Anexos</th><th></th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty" id="emptyState" style="display:none;">Nenhuma sessão registrada ainda.</div>
+    </div>
+
+    <div class="totals-bar">
+      <div class="t"><span class="label">Sessões no filtro</span><span class="value" id="totCount">0</span></div>
+      <div class="t"><span class="label">Remuneradas</span><span class="value" id="totPaidCount">0</span></div>
+      <div class="t"><span class="label">Não remuneradas</span><span class="value" id="totUnpaidCount">0</span></div>
+      <div class="t"><span class="label">Total recebido</span><span class="value" id="totValue">R$ 0,00</span></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Backup local</h2>
+    <div class="file-row">
+      <button id="btnExportJson" class="ghost">Exportar tudo (.json)</button>
+      <button id="btnImportJson" class="ghost">Importar backup (.json)</button>
+      <input type="file" id="importInput" accept="application/json" style="display:none">
+      <span style="font-size:12.5px;color:var(--ink-soft);">Cópia extra além do Google Drive.</span>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  // ======= EDITE AQUI, uma vez, depois de criar seu Client ID no Google Cloud =======
+  const GOOGLE_CLIENT_ID = "COLE_SEU_CLIENT_ID_AQUI.apps.googleusercontent.com";
+  // ====================================================================================
+
+  const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+  const REMOTE_FILE_NAME = 'registros-sessoes.json';
+  const ATTACH_FOLDER_NAME = 'Anexos - Livro de Sessões';
+  const DATA_KEY = 'sessoes-data';
+
+  let sessions = [];
+  let editingId = null;
+  let pendingFiles = []; // {name, mime, data (base64)}
+  let currentType = 'paga';
+
+  let tokenClient = null;
+  let accessToken = null;
+  let driveFileId = null;
+  let driveFolderId = null;
+  let effectiveClientId = null;
+
+  // ---------- Local persistence ----------
+  function loadLocal(){
+    try{ const raw = localStorage.getItem(DATA_KEY); sessions = raw ? JSON.parse(raw) : []; }
+    catch(e){ sessions = []; }
+  }
+  function saveLocal(){ localStorage.setItem(DATA_KEY, JSON.stringify(sessions)); }
+
+  function setDriveStatus(state, text){
+    const dot = document.getElementById('driveDot');
+    dot.className = 'dot' + (state === 'on' ? ' on' : state === 'warn' ? ' warn' : '');
+    document.getElementById('driveText').textContent = text;
+    document.getElementById('btnSyncNow').style.display = state === 'on' ? 'inline-block' : 'none';
+  }
+
+  // ---------- Client ID resolution ----------
+  function resolveClientId(){
+    if(GOOGLE_CLIENT_ID && !GOOGLE_CLIENT_ID.startsWith('COLE_SEU')) return GOOGLE_CLIENT_ID;
+    return localStorage.getItem('googleClientId') || null;
+  }
+
+  document.getElementById('btnSaveClientId').addEventListener('click', ()=>{
+    const val = document.getElementById('clientIdInput').value.trim();
+    if(!val){ alert('Cole o Client ID antes de salvar.'); return; }
+    localStorage.setItem('googleClientId', val);
+    document.getElementById('settingsNote').classList.add('hidden');
+    initGoogle();
+  });
+
+  // ---------- Google Identity / Drive ----------
+  function initGoogle(){
+    effectiveClientId = resolveClientId();
+    if(!effectiveClientId){
+      setDriveStatus('warn', 'Configuração pendente');
+      document.getElementById('settingsNote').classList.remove('hidden');
+      document.getElementById('btnConnectDrive').disabled = true;
+      return;
+    }
+    document.getElementById('settingsNote').classList.add('hidden');
+    document.getElementById('btnConnectDrive').disabled = false;
+    if(typeof google === 'undefined' || !google.accounts){
+      setTimeout(initGoogle, 300);
+      return;
+    }
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: effectiveClientId,
+      scope: SCOPES,
+      callback: async (resp)=>{
+        if(resp.error){
+          setDriveStatus('warn', 'Não foi possível conectar');
+          return;
+        }
+        accessToken = resp.access_token;
+        localStorage.setItem('driveConnected','1');
+        setDriveStatus('on', 'Google Drive conectado');
+        await syncFromDrive();
+      }
+    });
+    setDriveStatus('off', 'Google Drive não conectado');
+    if(localStorage.getItem('driveConnected') === '1'){
+      tokenClient.requestAccessToken({prompt:''});
+    }
+  }
+
+  document.getElementById('btnConnectDrive').addEventListener('click', ()=>{
+    if(!tokenClient){ initGoogle(); return; }
+    tokenClient.requestAccessToken({prompt:'consent'});
+  });
+  document.getElementById('btnSyncNow').addEventListener('click', syncFromDrive);
+
+  async function driveFetch(url, opts={}){
+    opts.headers = Object.assign({}, opts.headers, {Authorization: 'Bearer ' + accessToken});
+    const res = await fetch(url, opts);
+    if(res.status === 401){
+      setDriveStatus('warn', 'Sessão expirada — clique em Conectar novamente');
+      throw new Error('token expirado');
+    }
+    return res;
+  }
+
+  async function findRemoteFile(){
+    const q = encodeURIComponent(`name='${REMOTE_FILE_NAME}' and trashed=false`);
+    const res = await driveFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,modifiedTime)`);
+    const json = await res.json();
+    return (json.files && json.files[0]) || null;
+  }
+
+  async function findOrCreateFolder(){
+    const q = encodeURIComponent(`name='${ATTACH_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+    const res = await driveFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`);
+    const json = await res.json();
+    if(json.files && json.files[0]) return json.files[0].id;
+    const createRes = await driveFetch('https://www.googleapis.com/drive/v3/files', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({name: ATTACH_FOLDER_NAME, mimeType:'application/vnd.google-apps.folder'})
+    });
+    const created = await createRes.json();
+    return created.id;
+  }
+
+  async function syncFromDrive(){
+    try{
+      const remote = await findRemoteFile();
+      if(remote){
+        driveFileId = remote.id;
+        const res = await driveFetch(`https://www.googleapis.com/drive/v3/files/${remote.id}?alt=media`);
+        const remoteSessions = await res.json();
+        sessions = mergeSessions(sessions, remoteSessions);
+      }
+      driveFolderId = await findOrCreateFolder();
+      saveLocal();
+      render();
+      await pushToDrive();
+      setDriveStatus('on', 'Google Drive conectado · sincronizado agora');
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  function mergeSessions(local, remote){
+    const map = new Map();
+    (remote||[]).forEach(s=>map.set(s.id, s));
+    (local||[]).forEach(s=>map.set(s.id, s)); // local edits win on conflict by id
+    return Array.from(map.values());
+  }
+
+  async function pushToDrive(){
+    if(!accessToken) return; // not connected, local-only for now
+    try{
+      // upload pending attachments (those without driveFileId yet)
+      if(driveFolderId){
+        for(const s of sessions){
+          for(const a of (s.anexos||[])){
+            if(!a.driveFileId && a.data){
+              const meta = {name:a.fileName, parents:[driveFolderId]};
+              const boundary = '-------314159265358979323846';
+              const body =
+                `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n` +
+                `--${boundary}\r\nContent-Type: ${a.mime||'application/octet-stream'}\r\nContent-Transfer-Encoding: base64\r\n\r\n${a.data.split(',')[1]||a.data}\r\n` +
+                `--${boundary}--`;
+              const res = await driveFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                method:'POST',
+                headers:{'Content-Type': `multipart/related; boundary=${boundary}`},
+                body
+              });
+              const created = await res.json();
+              a.driveFileId = created.id;
+              delete a.data; // no longer need local base64 copy once it's safely in Drive
+            }
+          }
+        }
+      }
+      const content = JSON.stringify(sessions, null, 2);
+      if(driveFileId){
+        await driveFetch(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`, {
+          method:'PATCH',
+          headers:{'Content-Type':'application/json'},
+          body: content
+        });
+      } else {
+        const boundary='-------987654321';
+        const meta = {name:REMOTE_FILE_NAME};
+        const body =
+          `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n`+
+          `--${boundary}\r\nContent-Type: application/json\r\n\r\n${content}\r\n`+
+          `--${boundary}--`;
+        const res = await driveFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+          method:'POST',
+          headers:{'Content-Type': `multipart/related; boundary=${boundary}`},
+          body
+        });
+        const created = await res.json();
+        driveFileId = created.id;
+      }
+      saveLocal();
+    }catch(e){ console.error('Erro ao sincronizar com o Drive', e); }
+  }
+
+  async function fetchAttachmentBlob(a){
+    if(a.data) return base64ToBlob(a.data, a.mime);
+    if(a.driveFileId && accessToken){
+      const res = await driveFetch(`https://www.googleapis.com/drive/v3/files/${a.driveFileId}?alt=media`);
+      return await res.blob();
+    }
+    throw new Error('Anexo indisponível offline. Conecte ao Google Drive.');
+  }
+
+  function base64ToBlob(base64, mime){
+    const byteChars = atob(base64.split(',')[1] || base64);
+    const byteNumbers = new Array(byteChars.length);
+    for(let i=0;i<byteChars.length;i++) byteNumbers[i] = byteChars.charCodeAt(i);
+    return new Blob([new Uint8Array(byteNumbers)], {type: mime || 'application/octet-stream'});
+  }
+
+  // ---------- Form logic ----------
+  const btnPaid = document.getElementById('btnPaid');
+  const btnUnpaid = document.getElementById('btnUnpaid');
+  const valorField = document.getElementById('valorField');
+
+  function setType(t){
+    currentType = t;
+    btnPaid.classList.toggle('active', t==='paga');
+    btnUnpaid.classList.toggle('active', t==='nao_paga');
+    valorField.style.display = t === 'paga' ? 'flex' : 'none';
+  }
+  btnPaid.addEventListener('click', ()=>setType('paga'));
+  btnUnpaid.addEventListener('click', ()=>setType('nao_paga'));
+  setType('paga');
+
+  document.getElementById('btnAddFile').addEventListener('click', ()=> document.getElementById('fileInput').click());
+  document.getElementById('fileInput').addEventListener('change', async (e)=>{
+    for(const file of e.target.files){
+      const data = await fileToBase64(file);
+      pendingFiles.push({fileName: Date.now()+'_'+file.name, name:file.name, mime:file.type, data});
+    }
+    renderFileChips();
+    e.target.value = '';
+  });
+  function fileToBase64(file){
+    return new Promise((resolve,reject)=>{
+      const reader = new FileReader();
+      reader.onload = ()=>resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+  function renderFileChips(){
+    const el = document.getElementById('fileChips');
+    el.innerHTML = '';
+    pendingFiles.forEach((f, idx)=>{
+      const chip = document.createElement('span');
+      chip.className='file-chip';
+      chip.innerHTML = `<span>${escapeHtml(f.name)}</span>`;
+      const rm = document.createElement('button');
+      rm.textContent = '×';
+      rm.addEventListener('click', ()=>{ pendingFiles.splice(idx,1); renderFileChips(); });
+      chip.appendChild(rm);
+      el.appendChild(chip);
+    });
+  }
+
+  function resetForm(){
+    editingId = null;
+    document.getElementById('formTitle').textContent = 'Nova sessão';
+    document.getElementById('fPaciente').value = '';
+    document.getElementById('fData').value = '';
+    document.getElementById('fValor').value = '';
+    document.getElementById('fModalidade').value = '';
+    document.getElementById('fObs').value = '';
+    pendingFiles = [];
+    renderFileChips();
+    setType('paga');
+    document.getElementById('btnCancelEdit').style.display = 'none';
+  }
+  document.getElementById('btnCancelEdit').addEventListener('click', resetForm);
+
+  document.getElementById('btnSave').addEventListener('click', async ()=>{
+    const paciente = document.getElementById('fPaciente').value.trim();
+    const data = document.getElementById('fData').value;
+    if(!paciente || !data){ alert('Preencha ao menos o paciente e a data da sessão.'); return; }
+    const valor = currentType === 'paga' ? (parseFloat(document.getElementById('fValor').value) || 0) : 0;
+    const record = {
+      id: editingId || (Date.now() + '_' + Math.random().toString(36).slice(2,7)),
+      paciente, data, tipo: currentType, valor,
+      modalidade: document.getElementById('fModalidade').value.trim(),
+      obs: document.getElementById('fObs').value.trim(),
+      anexos: editingId ? (sessions.find(s=>s.id===editingId)?.anexos || []) : []
+    };
+    record.anexos = record.anexos.concat(pendingFiles);
+
+    if(editingId){ sessions[sessions.findIndex(s=>s.id===editingId)] = record; }
+    else{ sessions.push(record); }
+
+    saveLocal();
+    resetForm();
+    render();
+    await pushToDrive();
+  });
+
+  function editRecord(id){
+    const s = sessions.find(x=>x.id===id);
+    if(!s) return;
+    editingId = id;
+    document.getElementById('formTitle').textContent = 'Editar sessão';
+    document.getElementById('fPaciente').value = s.paciente;
+    document.getElementById('fData').value = s.data;
+    document.getElementById('fValor').value = s.valor || '';
+    document.getElementById('fModalidade').value = s.modalidade || '';
+    document.getElementById('fObs').value = s.obs || '';
+    setType(s.tipo);
+    pendingFiles = [];
+    renderFileChips();
+    document.getElementById('btnCancelEdit').style.display = 'inline-block';
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  async function deleteRecord(id){
+    if(!confirm('Excluir esta sessão? Essa ação não pode ser desfeita.')) return;
+    sessions = sessions.filter(s=>s.id!==id);
+    saveLocal();
+    render();
+    await pushToDrive();
+  }
+
+  async function openAttachment(sessionId, fileName){
+    const s = sessions.find(x=>x.id===sessionId);
+    const a = s.anexos.find(x=>x.fileName===fileName);
+    if(!a) return;
+    try{
+      const blob = await fetchAttachmentBlob(a);
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    }catch(e){ alert(e.message); }
+  }
+
+  // ---------- Filters & rendering ----------
+  function populatePacienteFilter(){
+    const sel = document.getElementById('filterPaciente');
+    const current = sel.value;
+    const names = [...new Set(sessions.map(s=>s.paciente))].sort();
+    sel.innerHTML = '<option value="">Todos</option>' + names.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+    sel.value = current;
+  }
+
+  function getFiltered(){
+    const p = document.getElementById('filterPaciente').value;
+    const mes = document.getElementById('filterMes').value;
+    const tipo = document.getElementById('filterTipo').value;
+    return sessions.filter(s=>{
+      if(p && s.paciente !== p) return false;
+      if(mes && !s.data.startsWith(mes)) return false;
+      if(tipo && s.tipo !== tipo) return false;
+      return true;
+    }).sort((a,b)=> b.data.localeCompare(a.data));
+  }
+
+  function fmtMoney(v){ return 'R$ ' + Number(v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+  function fmtDate(d){ const [y,m,day] = d.split('-'); return `${day}/${m}/${y}`; }
+  function escapeHtml(str){ return String(str).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function render(){
+    populatePacienteFilter();
+    const filtered = getFiltered();
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = '';
+    document.getElementById('emptyState').style.display = filtered.length ? 'none' : 'block';
+
+    filtered.forEach(s=>{
+      const tr = document.createElement('tr');
+      const anexosHtml = (s.anexos||[]).map(a=>`<a data-file="${a.fileName}" data-session="${s.id}">${escapeHtml(a.name)}</a>`).join(', ') || '—';
+      tr.innerHTML = `
+        <td>${fmtDate(s.data)}</td>
+        <td>${escapeHtml(s.paciente)}${s.modalidade ? `<div style="font-size:12px;color:var(--ink-soft);">${escapeHtml(s.modalidade)}</div>` : ''}</td>
+        <td><span class="tag ${s.tipo==='paga'?'paid':'unpaid'}">${s.tipo==='paga'?'Remunerada':'Não remunerada'}</span></td>
+        <td class="value-cell">${s.tipo==='paga' ? fmtMoney(s.valor) : '—'}</td>
+        <td class="attach-list">${anexosHtml}</td>
+        <td><div class="row-actions"><button data-edit="${s.id}" class="ghost small">Editar</button><button data-del="${s.id}" class="ghost small">Excluir</button></div></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click', ()=>editRecord(b.dataset.edit)));
+    tbody.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', ()=>deleteRecord(b.dataset.del)));
+    tbody.querySelectorAll('a[data-file]').forEach(a=>a.addEventListener('click', ()=>openAttachment(a.dataset.session, a.dataset.file)));
+
+    document.getElementById('totCount').textContent = filtered.length;
+    document.getElementById('totPaidCount').textContent = filtered.filter(s=>s.tipo==='paga').length;
+    document.getElementById('totUnpaidCount').textContent = filtered.filter(s=>s.tipo==='nao_paga').length;
+    document.getElementById('totValue').textContent = fmtMoney(filtered.reduce((sum,s)=> sum + (s.tipo==='paga'? Number(s.valor||0):0), 0));
+  }
+
+  ['filterPaciente','filterMes','filterTipo'].forEach(id=> document.getElementById(id).addEventListener('change', render));
+  document.getElementById('btnClearFilters').addEventListener('click', ()=>{
+    document.getElementById('filterPaciente').value='';
+    document.getElementById('filterMes').value='';
+    document.getElementById('filterTipo').value='';
+    render();
+  });
+
+  // ---------- Backup export/import ----------
+  document.getElementById('btnExportJson').addEventListener('click', ()=>{
+    const blob = new Blob([JSON.stringify(sessions, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'registros-sessoes-backup.json';
+    a.click();
+  });
+  document.getElementById('btnImportJson').addEventListener('click', ()=> document.getElementById('importInput').click());
+  document.getElementById('importInput').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = async ()=>{
+      try{
+        const imported = JSON.parse(reader.result);
+        if(!Array.isArray(imported)) throw new Error('formato inválido');
+        if(confirm(`Importar ${imported.length} sessões? Isso será somado aos registros atuais.`)){
+          sessions = mergeSessions(sessions, imported);
+          saveLocal();
+          render();
+          await pushToDrive();
+        }
+      }catch(err){ alert('Arquivo inválido: ' + err.message); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+
+  document.getElementById('dismissNote').addEventListener('click', ()=>{
+    document.getElementById('setupNote').classList.add('hidden');
+    localStorage.setItem('noteDismissed','1');
+  });
+  if(localStorage.getItem('noteDismissed')) document.getElementById('setupNote').classList.add('hidden');
+
+  // ---------- Init ----------
+  loadLocal();
+  render();
+  initGoogle();
+})();
+</script>
+</body>
+</html>
